@@ -14,7 +14,7 @@ from colossalai.utils.checkpoint import save_checkpoint, load_checkpoint
 
 import colossalai
 from colossalai.logging import disable_existing_loggers, get_dist_logger
-from colossalai.nn.optimizer import HybridAdam
+from colossalai.nn.optimizer import HybridAdam, FusedAdam
 from colossalai.nn.parallel import zero_model_wrapper, zero_optim_wrapper
 from colossalai.tensor import ColoParameter, ComputePattern, ComputeSpec, ProcessGroup, ReplicaSpec, ShardSpec
 from colossalai.utils import get_current_device
@@ -235,7 +235,7 @@ def main():
 
         # build GPT model
         with ColoInitContext(device=get_current_device(),
-                             dtype=torch.half,
+                             dtype=torch.bfloat16,
                              default_dist_spec=default_dist_spec,
                              default_pg=shard_pg):
             model = model_builder(args.model_type)(checkpoint=True)
