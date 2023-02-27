@@ -25,8 +25,8 @@ CAI_VERSION = colossalai.__version__
 
 def parse_args():
     parser = colossalai.get_default_parser()
-    parser.add_argument("--save_steps", type=int, default=10000)
-    parser.add_argument("--eval_steps", type=int, default=2000)
+    parser.add_argument("--save_steps", type=int, default=1000)
+    parser.add_argument("--eval_steps", type=int, default=100)
     parser.add_argument("--data_dir", type=str, default="./")
     parser.add_argument(
         "--distplan",
@@ -67,7 +67,7 @@ def parse_args():
     parser.add_argument(
         "--train_step",
         type=int,
-        default=10,
+        default=6000000,
         help="training iterations for test",
     )
 
@@ -369,6 +369,7 @@ def main():
             train_step()
             prof.step()
             if n % args.save_steps == 0:
+                logger.info("start to eval...")
                 vloss = estimate_loss(args.eval_steps)
                 logger.info(
                     f"[EVAL] [{n + 1}/{NUM_STEPS}] Val loss:{vloss['val'].item():.3f}",
