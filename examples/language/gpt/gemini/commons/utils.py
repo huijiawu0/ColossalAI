@@ -1,6 +1,6 @@
 import time
 from contextlib import nullcontext
-
+import numpy as np
 import torch
 from torch.profiler import ProfilerActivity, profile, schedule, tensorboard_trace_handler
 
@@ -17,6 +17,13 @@ class DummyProfiler:
 # Randomly Generated Data
 def get_data(batch_size, seq_len, vocab_size):
     input_ids = torch.randint(0, vocab_size, (batch_size, seq_len), device=torch.cuda.current_device())
+    attention_mask = torch.ones_like(input_ids)
+    return input_ids, attention_mask
+
+
+def get_batch(data, batch_size, seq_len):
+    ix = torch.randint(len(data) - seq_len, (batch_size,))
+    input_ids = torch.stack([torch.from_numpy((data[i:i + seq_len]).astype(np.int64)) for i in ix], device=torch.cuda.current_device())
     attention_mask = torch.ones_like(input_ids)
     return input_ids, attention_mask
 

@@ -5,8 +5,9 @@ from time import time
 import psutil
 import torch
 import torch.nn as nn
+import numpy as np
 from commons.model_zoo import model_builder
-from commons.utils import get_data, get_profile_context, get_tflops, get_time_stamp
+from commons.utils import get_data, get_profile_context, get_tflops, get_time_stamp, get_batch
 from packaging import version
 from torch.nn.parallel import DistributedDataParallel as DDP
 from colossalai.utils.checkpoint import save_checkpoint, load_checkpoint
@@ -24,6 +25,9 @@ CAI_VERSION = colossalai.__version__
 
 def parse_args():
     parser = colossalai.get_default_parser()
+    parser.add_argument("--save_steps", type=int, default=1000)
+    parser.add_argument("--eval_steps", type=int, default=200)
+    parser.add_argument("--dataset", type=str, default="")
     parser.add_argument(
         "--distplan",
         type=str,
@@ -189,6 +193,11 @@ def main():
     set_cpu_maximum_parallelism()
     args = parse_args()
 
+    data_dir = args.dataset
+    train_data = np.memmap(os.path.join(data_dir, 'train.bin'), dtype=np.uint16, mode='r')
+    val_data = np.memmap(os.path.join(data_dir, 'val.bin'), dtype=np.uint16, mode='r')
+    print(len(train_data), len(val_data))
+    
     # if args.distplan not in ["colossalai", "torch_ddp", "torch_zero", "zero1", "zero2"]:
     if args.distplan not in ["CAI_ZeRO1", "CAI_ZeRO2", "CAI_Gemini", "Pytorch_DDP", "Pytorch_ZeRO"]:
         raise TypeError(f"{args.distplan} is error")
@@ -297,7 +306,8 @@ def main():
 
     def train_step():
         # we just use randomly generated data here
-        input_ids, attn_mask = get_data(BATCH_SIZE, SEQ_LEN, VOCAB_SIZE)
+        input_ids, attn_mask = get_batch(train_data, BATCH_SIZE, SEQ_LEN)
+        # input_ids, attn_mask = get_data(BATCH_SIZE, SEQ_LEN, VOCAB_SIZE)
         optimizer.zero_grad()
 
         start = time()
@@ -339,11 +349,33 @@ def main():
                                         NUM_STEPS - WARMUP_STEPS,
                                         save_dir=f"profile/{get_time_stamp()}-demo")
 
+    @torch.no_grad()
+    def estimate_loss(eval_iters):
+        out = {}
+        model.eval()
+        losses = torch.zeros(eval_iters)
+        for k in range(eval_iters):
+            input_ids, attn_mask = get_batch(val_data, BATCH_SIZE, SEQ_LEN)
+            logits, loss = model(input_ids, attn_mask)
+            losses[k] = loss.item()
+        out['val'] = losses.mean()
+        model.train()
+        return out
+
+    best_val_loss = 1e9
     with demo_profiler as prof:
         for n in range(NUM_STEPS):
             train_step()
             prof.step()
-            save_checkpoint('ckpt.pt', n, model)
+            if n % args.save_steps == 0:
+                vloss = estimate_loss(args.eval_steps)
+                logger.info(
+                    f"[EVAL] [{n + 1}/{NUM_STEPS}] Val loss:{vloss['val'].item():.3f}",
+                    ranks=[0],
+                )
+                if n > 0 and vloss['val'] < best_val_loss:
+                    best_val_loss = vloss['val']
+                    save_checkpoint('out', n, model)
 
     tflops_list.sort()
     median_index = ((NUM_STEPS - WARMUP_STEPS) >> 1) + WARMUP_STEPS
