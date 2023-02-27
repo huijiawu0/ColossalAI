@@ -25,8 +25,8 @@ CAI_VERSION = colossalai.__version__
 
 def parse_args():
     parser = colossalai.get_default_parser()
-    parser.add_argument("--save_steps", type=int, default=1000)
-    parser.add_argument("--eval_steps", type=int, default=200)
+    parser.add_argument("--save_steps", type=int, default=10000)
+    parser.add_argument("--eval_steps", type=int, default=2000)
     parser.add_argument("--data_dir", type=str, default="./")
     parser.add_argument(
         "--distplan",
@@ -356,7 +356,8 @@ def main():
         losses = torch.zeros(eval_iters)
         for k in range(eval_iters):
             input_ids, attn_mask = get_batch(val_data, BATCH_SIZE, SEQ_LEN)
-            logits, loss = model(input_ids, attn_mask)
+            outputs = model(input_ids, attn_mask)
+            loss = criterion(outputs, input_ids)
             losses[k] = loss.item()
         out['val'] = losses.mean()
         model.train()
