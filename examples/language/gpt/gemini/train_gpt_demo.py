@@ -379,8 +379,8 @@ def main():
                     f"[EVAL] [{n + 1}/{NUM_STEPS}] Val loss:{vloss['val'].item():.3f}",
                     ranks=[0],
                 )
-                if vloss['val'] < best_val_loss:
-                    best_val_loss = vloss['val']
+                if vloss['val'].item() < best_val_loss:
+                    best_val_loss = vloss['val'].item()
                     logger.info("save model to out...")
                     save_checkpoint('out', 0, model)
 
