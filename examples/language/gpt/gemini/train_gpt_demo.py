@@ -25,8 +25,8 @@ CAI_VERSION = colossalai.__version__
 
 def parse_args():
     parser = colossalai.get_default_parser()
-    parser.add_argument("--save_steps", type=int, default=1000)
-    parser.add_argument("--eval_steps", type=int, default=100)
+    parser.add_argument("--save_steps", type=int, default=100)
+    parser.add_argument("--eval_steps", type=int, default=10)
     parser.add_argument("--data_dir", type=str, default="./")
     parser.add_argument(
         "--distplan",
@@ -358,6 +358,10 @@ def main():
             input_ids, attn_mask = get_batch(val_data, BATCH_SIZE, SEQ_LEN)
             outputs = model(input_ids, attn_mask)
             loss = criterion(outputs, input_ids)
+            logger.info(
+                f"[VALID] [{n + 1}/{NUM_STEPS}] Loss:{loss.item():.3f}",
+                ranks=[0],
+            )
             losses[k] = loss.item()
         out['val'] = losses.mean()
         model.train()
