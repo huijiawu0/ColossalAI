@@ -9,6 +9,7 @@ from commons.model_zoo import model_builder
 from commons.utils import get_data, get_profile_context, get_tflops, get_time_stamp
 from packaging import version
 from torch.nn.parallel import DistributedDataParallel as DDP
+from colossalai.utils.checkpoint import save_checkpoint, load_checkpoint
 
 import colossalai
 from colossalai.logging import disable_existing_loggers, get_dist_logger
@@ -342,6 +343,7 @@ def main():
         for n in range(NUM_STEPS):
             train_step()
             prof.step()
+            save_checkpoint('ckpt.pt', n, model)
 
     tflops_list.sort()
     median_index = ((NUM_STEPS - WARMUP_STEPS) >> 1) + WARMUP_STEPS
