@@ -50,15 +50,15 @@ def gpt2_20b(checkpoint=True):
 
 
 def gpt2_24b(checkpoint=True):
-    return GPTLMModel(hidden_size=8192, num_layers=30, num_attention_heads=16, checkpoint=checkpoint)
+    return GPTLMModel(hidden_size=8192, num_layers=30, num_attention_heads=16, vocab_size=50304,checkpoint=checkpoint)
 
 
 def gpt2_30b(checkpoint=True):
-    return GPTLMModel(hidden_size=8192, num_layers=37, num_attention_heads=16, checkpoint=checkpoint)
+    return GPTLMModel(hidden_size=8192, num_layers=37, num_attention_heads=16, vocab_size=50304,checkpoint=checkpoint)
 
 
 def gpt2_40b(checkpoint=True):
-    return GPTLMModel(hidden_size=8192, num_layers=50, num_attention_heads=16, checkpoint=checkpoint)
+    return GPTLMModel(hidden_size=8192, num_layers=50, num_attention_heads=16, vocab_size=50304, checkpoint=checkpoint)
 
 
 def model_builder(model_size: str) -> callable:

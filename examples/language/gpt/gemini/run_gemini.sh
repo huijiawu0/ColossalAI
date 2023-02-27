@@ -3,7 +3,7 @@ set -x
 export DISTPLAN=${DISTPLAN:-"CAI_Gemini"}
 
 # The following options only valid when DISTPLAN="colossalai"
-export GPUNUM=${GPUNUM:-7}
+export GPUNUM=${GPUNUM:-8}
 export TPDEGREE=${TPDEGREE:-1}
 export PLACEMENT=${PLACEMENT:-"cpu"}
 export USE_SHARD_INIT=${USE_SHARD_INIT:-False}
@@ -21,7 +21,7 @@ fi
 
 mkdir -p gemini_logs
 
-CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7 torchrun --standalone --nproc_per_node=${GPUNUM} ./train_gpt_demo.py \
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 torchrun --standalone --nproc_per_node=${GPUNUM} ./train_gpt_demo.py \
 --tp_degree=${TPDEGREE} \
 --model_type=${MODEL_TYPE} \
 --batch_size=${BATCH_SIZE} \
