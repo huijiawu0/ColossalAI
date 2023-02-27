@@ -262,7 +262,7 @@ def main():
             raise RuntimeError
 
         # build a highly optimized gpu/cpu optimizer
-        optimizer = HybridAdam(model.parameters(), lr=1e-3)
+        optimizer = HybridAdam(model.parameters(), lr=1e-4)
 
         if args.distplan == "CAI_ZeRO1":
             zero_stage = 1
@@ -359,7 +359,7 @@ def main():
             outputs = model(input_ids, attn_mask)
             loss = criterion(outputs, input_ids)
             logger.info(
-                f"[VALID] [{n + 1}/{NUM_STEPS}] Loss:{loss.item():.3f}",
+                f"[EVAL-inner] [{k + 1}/{eval_iters}] Loss:{loss.item():.3f}",
                 ranks=[0],
             )
             losses[k] = loss.item()
@@ -381,6 +381,7 @@ def main():
                 )
                 if n > 0 and vloss['val'] < best_val_loss:
                     best_val_loss = vloss['val']
+                    logger.info("save model to out...")
                     save_checkpoint('out', 0, model)
 
     tflops_list.sort()
