@@ -27,7 +27,7 @@ def parse_args():
     parser = colossalai.get_default_parser()
     parser.add_argument("--save_steps", type=int, default=1000)
     parser.add_argument("--eval_steps", type=int, default=200)
-    parser.add_argument("--dataset", type=str, default="")
+    parser.add_argument("--data_dir", type=str, default="./")
     parser.add_argument(
         "--distplan",
         type=str,
@@ -193,7 +193,7 @@ def main():
     set_cpu_maximum_parallelism()
     args = parse_args()
 
-    data_dir = args.dataset
+    data_dir = args.data_dir
     train_data = np.memmap(os.path.join(data_dir, 'train.bin'), dtype=np.uint16, mode='r')
     val_data = np.memmap(os.path.join(data_dir, 'val.bin'), dtype=np.uint16, mode='r')
     print(len(train_data), len(val_data))
@@ -375,7 +375,7 @@ def main():
                 )
                 if n > 0 and vloss['val'] < best_val_loss:
                     best_val_loss = vloss['val']
-                    save_checkpoint('out', n, model)
+                    save_checkpoint('out', 0, model)
 
     tflops_list.sort()
     median_index = ((NUM_STEPS - WARMUP_STEPS) >> 1) + WARMUP_STEPS
