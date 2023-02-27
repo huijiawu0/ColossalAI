@@ -10,7 +10,7 @@ export USE_SHARD_INIT=${USE_SHARD_INIT:-False}
 export BATCH_SIZE=${BATCH_SIZE:-16}
 export MODEL_TYPE=${MODEL_TYPE:-"gpt2-20b"}
 export TRAIN_STEP=${TRAIN_STEP:-6000000}
-export DATADIR=${DATADIR:"/root/autodl-tmp/model/nanoGPT/data/wudao/"}
+export DATADIR=${DATADIR:-"/root/autodl-tmp/model/nanoGPT/data/wudao/"}
 # export PYTHONPATH=$PWD:$PYTHONPATH
 
 if [ ${USE_SHARD_INIT} = "True" ]; then
