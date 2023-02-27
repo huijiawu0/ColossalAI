@@ -46,7 +46,7 @@ def gpt2_14b(checkpoint=True):
 
 
 def gpt2_20b(checkpoint=True):
-    return GPTLMModel(hidden_size=8192, num_layers=25, num_attention_heads=16, checkpoint=checkpoint)
+    return GPTLMModel(hidden_size=8192, num_layers=25, num_attention_heads=16, vocab_size=50304, checkpoint=checkpoint)
 
 
 def gpt2_24b(checkpoint=True):
