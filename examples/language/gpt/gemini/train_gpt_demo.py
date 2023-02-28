@@ -264,7 +264,7 @@ def main():
             raise RuntimeError
 
         # build a highly optimized gpu/cpu optimizer
-        optimizer = HybridAdam(model.parameters(), lr=1e-4)
+        optimizer = HybridAdam(model.parameters(), lr=1e-5)
 
         if args.distplan == "CAI_ZeRO1":
             zero_stage = 1
