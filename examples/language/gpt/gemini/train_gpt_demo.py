@@ -240,6 +240,8 @@ def main():
                              default_pg=shard_pg):
             model = model_builder(args.model_type)(checkpoint=True)
 
+        logger.info("load model from out...")
+        load_checkpoint('out', 0, model)
         tp_pg = ProcessGroup(tp_degree=args.tp_degree)
         # Tensor Parallelism (TP)
         # You should notice that v0.1.10 is not compatible with TP degree > 1
@@ -382,7 +384,7 @@ def main():
                 if vloss['val'].item() < best_val_loss:
                     best_val_loss = vloss['val'].item()
                     logger.info("save model to out...")
-                    save_checkpoint('out', 0, model)
+                    save_checkpoint('out', 0, model, optimizer)
 
     tflops_list.sort()
     median_index = ((NUM_STEPS - WARMUP_STEPS) >> 1) + WARMUP_STEPS
