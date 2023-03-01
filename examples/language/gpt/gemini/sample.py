@@ -18,7 +18,7 @@ from colossalai.utils.checkpoint import save_checkpoint, load_checkpoint
 
 import colossalai
 from colossalai.logging import disable_existing_loggers, get_dist_logger
-from colossalai.nn.optimizer import HybridAdam, FusedLAMB
+from colossalai.nn.optimizer import HybridAdam, CPUAdam, FusedAdam
 from colossalai.nn.parallel import zero_model_wrapper, zero_optim_wrapper
 from colossalai.tensor import ColoParameter, ComputePattern, ComputeSpec, ProcessGroup, ReplicaSpec, ShardSpec
 from colossalai.utils import get_current_device
@@ -262,9 +262,6 @@ def main():
         else:
             raise RuntimeError
         
-        # build a highly optimized gpu/cpu optimizer
-        optimizer = torch.optim.AdamW(model.parameters(), lr=1e-5)
-        
         if args.distplan == "CAI_ZeRO1":
             zero_stage = 1
         elif args.distplan == "CAI_ZeRO2":
@@ -276,7 +273,6 @@ def main():
         
         # wrap your model and optimizer
         model = zero_model_wrapper(model, zero_stage, gemini_config)
-        optimizer = zero_optim_wrapper(model, optimizer, optim_config=optim_config)
         
         logger.info(get_mem_info(prefix='After init optim, '), ranks=[0])
     else:
