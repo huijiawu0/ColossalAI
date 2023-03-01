@@ -386,8 +386,8 @@ def main():
                 if vloss['val'].item() < best_val_loss:
                     best_val_loss = vloss['val'].item()
                     logger.info("save model to out...")
-                    save_checkpoint('out', 0, model, optimizer)
-
+                    save_checkpoint('out', 0, model)
+                    
     tflops_list.sort()
     median_index = ((NUM_STEPS - WARMUP_STEPS) >> 1) + WARMUP_STEPS
     logger.info(f"Median TFLOPS is {tflops_list[median_index]:.3f}")
