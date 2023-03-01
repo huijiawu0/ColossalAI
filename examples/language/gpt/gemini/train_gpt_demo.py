@@ -6,6 +6,8 @@ import psutil
 import torch
 import torch.nn as nn
 import numpy as np
+from transformers import AdamW
+
 from commons.model_zoo import model_builder
 from commons.utils import get_data, get_profile_context, get_tflops, get_time_stamp, get_batch
 from packaging import version
@@ -14,7 +16,7 @@ from colossalai.utils.checkpoint import save_checkpoint, load_checkpoint
 
 import colossalai
 from colossalai.logging import disable_existing_loggers, get_dist_logger
-from colossalai.nn.optimizer import HybridAdam, FusedAdam
+from colossalai.nn.optimizer import HybridAdam, FusedLAMB
 from colossalai.nn.parallel import zero_model_wrapper, zero_optim_wrapper
 from colossalai.tensor import ColoParameter, ComputePattern, ComputeSpec, ProcessGroup, ReplicaSpec, ShardSpec
 from colossalai.utils import get_current_device
@@ -264,7 +266,7 @@ def main():
             raise RuntimeError
 
         # build a highly optimized gpu/cpu optimizer
-        optimizer = HybridAdam(model.parameters(), lr=1e-5)
+        optimizer = torch.optim.AdamW(model.parameters(), lr=1e-5)
 
         if args.distplan == "CAI_ZeRO1":
             zero_stage = 1
