@@ -32,6 +32,8 @@ def parse_args():
     parser.add_argument("--save_steps", type=int, default=200)
     parser.add_argument("--eval_steps", type=int, default=10)
     parser.add_argument("--data_dir", type=str, default="./")
+    parser.add_argument("--model_idx", type=int, default=0)
+    parser.add_argument("--start", type=str, default="\n")
     parser.add_argument(
         "--distplan",
         type=str,
@@ -237,7 +239,7 @@ def main():
             model = model_builder(args.model_type)(checkpoint=True)
         
         logger.info("load model from out...")
-        model_idx = int(sys.argv[1])
+        model_idx = args.model_idx
         load_checkpoint('out', model_idx, model)
         tp_pg = ProcessGroup(tp_degree=args.tp_degree)
         # Tensor Parallelism (TP)
@@ -285,7 +287,7 @@ def main():
     enc = tiktoken.get_encoding("gpt2")
     encode = lambda s: enc.encode(s, allowed_special={"<|endoftext|>"})
     decode = lambda l: enc.decode(l)
-    start = sys.argv[2]
+    start = args.start
     start_ids = encode(start)
     print(start, start_ids)
     input_ids = torch.tensor(start_ids, dtype=torch.long, device="cuda:0")
