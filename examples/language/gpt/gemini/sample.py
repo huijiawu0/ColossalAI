@@ -197,11 +197,6 @@ def main():
     set_cpu_maximum_parallelism()
     args = parse_args()
     
-    data_dir = args.data_dir
-    train_data = np.memmap(os.path.join(data_dir, 'train.bin'), dtype=np.uint16, mode='r')
-    val_data = np.memmap(os.path.join(data_dir, 'val.bin'), dtype=np.uint16, mode='r')
-    print(len(train_data), len(val_data))
-    
     # if args.distplan not in ["colossalai", "torch_ddp", "torch_zero", "zero1", "zero2"]:
     if args.distplan not in ["CAI_ZeRO1", "CAI_ZeRO2", "CAI_Gemini", "Pytorch_DDP", "Pytorch_ZeRO"]:
         raise TypeError(f"{args.distplan} is error")
@@ -242,7 +237,8 @@ def main():
             model = model_builder(args.model_type)(checkpoint=True)
         
         logger.info("load model from out...")
-        load_checkpoint('out', 0, model)
+        model_idx = int(sys.argv[1])
+        load_checkpoint('out', model_idx, model)
         tp_pg = ProcessGroup(tp_degree=args.tp_degree)
         # Tensor Parallelism (TP)
         # You should notice that v0.1.10 is not compatible with TP degree > 1
@@ -289,7 +285,7 @@ def main():
     enc = tiktoken.get_encoding("gpt2")
     encode = lambda s: enc.encode(s, allowed_special={"<|endoftext|>"})
     decode = lambda l: enc.decode(l)
-    start = sys.argv[1]
+    start = sys.argv[2]
     start_ids = encode(start)
     print(start, start_ids)
     input_ids = torch.tensor(start_ids, dtype=torch.long, device="cuda:0")
