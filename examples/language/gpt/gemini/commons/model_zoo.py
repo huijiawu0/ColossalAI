@@ -4,7 +4,7 @@ from transformers import GPT2Config, GPT2LMHeadModel
 
 ## Define the Model and Loss Based on Huggingface transformers GPT2LMHeadModel
 class GPTLMModel(nn.Module):
-
+    
     def __init__(self,
                  hidden_size=768,
                  num_layers=12,
@@ -23,26 +23,33 @@ class GPTLMModel(nn.Module):
         self.model = GPT2LMHeadModel(self.config)
         if checkpoint:
             self.model.gradient_checkpointing_enable()
-
+    
     def forward(self, input_ids, attention_mask):
         # Only return lm_logits
         return self.model(input_ids=input_ids, attention_mask=attention_mask, use_cache=not self.checkpoint)[0]
+    
+    def generate(self, inputs):
+        return self.model.generate(inputs,
+                                   max_length=150,
+                                   do_sample=True,
+                                   top_p=0.6,
+                                   num_return_sequences=5)
 
 
 def gpt2_medium(checkpoint=False):
-    return GPTLMModel(hidden_size=1024, num_layers=24, num_attention_heads=16, checkpoint=checkpoint)
+    return GPTLMModel(hidden_size=1024, num_layers=24, num_attention_heads=16, vocab_size=50304, checkpoint=checkpoint)
 
 
 def gpt2_xl(checkpoint=True):
-    return GPTLMModel(hidden_size=1600, num_layers=48, num_attention_heads=32, checkpoint=checkpoint)
+    return GPTLMModel(hidden_size=1600, num_layers=48, num_attention_heads=32, vocab_size=50304, checkpoint=checkpoint)
 
 
 def gpt2_10b(checkpoint=True):
-    return GPTLMModel(hidden_size=4096, num_layers=50, num_attention_heads=16, checkpoint=checkpoint)
+    return GPTLMModel(hidden_size=4096, num_layers=50, num_attention_heads=16, vocab_size=50304, checkpoint=checkpoint)
 
 
 def gpt2_14b(checkpoint=True):
-    return GPTLMModel(hidden_size=4096, num_layers=70, num_attention_heads=16, checkpoint=checkpoint)
+    return GPTLMModel(hidden_size=4096, num_layers=70, num_attention_heads=16, vocab_size=50304, checkpoint=checkpoint)
 
 
 def gpt2_20b(checkpoint=True):
@@ -50,11 +57,11 @@ def gpt2_20b(checkpoint=True):
 
 
 def gpt2_24b(checkpoint=True):
-    return GPTLMModel(hidden_size=8192, num_layers=30, num_attention_heads=16, vocab_size=50304,checkpoint=checkpoint)
+    return GPTLMModel(hidden_size=8192, num_layers=30, num_attention_heads=16, vocab_size=50304, checkpoint=checkpoint)
 
 
 def gpt2_30b(checkpoint=True):
-    return GPTLMModel(hidden_size=8192, num_layers=37, num_attention_heads=16, vocab_size=50304,checkpoint=checkpoint)
+    return GPTLMModel(hidden_size=8192, num_layers=37, num_attention_heads=16, vocab_size=50304, checkpoint=checkpoint)
 
 
 def gpt2_40b(checkpoint=True):
