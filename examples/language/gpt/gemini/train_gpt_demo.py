@@ -27,7 +27,7 @@ CAI_VERSION = colossalai.__version__
 
 def parse_args():
     parser = colossalai.get_default_parser()
-    parser.add_argument("--save_steps", type=int, default=100)
+    parser.add_argument("--save_steps", type=int, default=200)
     parser.add_argument("--eval_steps", type=int, default=10)
     parser.add_argument("--data_dir", type=str, default="./")
     parser.add_argument(

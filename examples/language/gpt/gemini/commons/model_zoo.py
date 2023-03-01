@@ -28,12 +28,8 @@ class GPTLMModel(nn.Module):
         # Only return lm_logits
         return self.model(input_ids=input_ids, attention_mask=attention_mask, use_cache=not self.checkpoint)[0]
     
-    def generate(self, inputs):
-        return self.model.generate(inputs,
-                                   max_length=150,
-                                   do_sample=True,
-                                   top_p=0.6,
-                                   num_return_sequences=5)
+    def generate(self, inputs, config):
+        return self.model.generate(inputs, config)
 
 
 def gpt2_medium(checkpoint=False):
