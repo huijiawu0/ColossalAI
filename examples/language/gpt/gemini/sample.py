@@ -191,13 +191,6 @@ def tensor_parallelize(model: torch.nn.Module, pg: ProcessGroup):
             param.visited = True
 
 
-os.environ['RANK'] = '0'
-os.environ['LOCAL_RANK'] = '0'
-os.environ['WORLD_SIZE'] = '2'
-os.environ['MASTER_ADDR'] = '1d2d8b0466e2'
-os.environ['MASTER_PORT'] = '42043'
-
-
 def main():
     # version check
     # this example is supposed to work for versions greater than 0.2.0
