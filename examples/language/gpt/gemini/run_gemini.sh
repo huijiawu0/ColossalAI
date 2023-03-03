@@ -7,7 +7,7 @@ export GPUNUM=${GPUNUM:-8}
 export TPDEGREE=${TPDEGREE:-1}
 export PLACEMENT=${PLACEMENT:-"cpu"}
 export USE_SHARD_INIT=${USE_SHARD_INIT:-False}
-export BATCH_SIZE=${BATCH_SIZE:-16}
+export BATCH_SIZE=${BATCH_SIZE:-32}
 export MODEL_TYPE=${MODEL_TYPE:-"gpt2_20b"}
 export TRAIN_STEP=${TRAIN_STEP:-6000000}
 export DATADIR=${DATADIR:-"/root/autodl-tmp/model/nanoGPT/data/wudao/"}
@@ -19,6 +19,7 @@ else
   USE_SHARD_INIT=""
 fi
 
+mkdir -p out
 mkdir -p gemini_logs
 
 CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 torchrun --standalone --nproc_per_node=${GPUNUM} ./train_gpt_demo.py \

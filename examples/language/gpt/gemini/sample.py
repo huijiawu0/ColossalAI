@@ -241,45 +241,8 @@ def main():
         logger.info("load model from out...")
         model_idx = args.model_idx
         load_checkpoint('out', model_idx, model)
-        tp_pg = ProcessGroup(tp_degree=args.tp_degree)
-        # Tensor Parallelism (TP)
-        # You should notice that v0.1.10 is not compatible with TP degree > 1
-        if args.tp_degree > 1:
-            tensor_parallelize(model, tp_pg)
-        
-        # asign running configurations
-        gemini_config = None
-        if args.distplan.startswith("CAI_ZeRO"):
-            optim_config = dict(reduce_bucket_size=12 * 1024 * 1024, overlap_communication=True, verbose=True)
-        elif args.distplan == "CAI_Gemini":
-            gemini_config = dict(strict_ddp_mode=args.tp_degree == 1,
-                                 device=get_current_device(),
-                                 placement_policy=args.placement,
-                                 pin_memory=True,
-                                 hidden_dim=model.config.n_embd,
-                                 search_range_mb=128)
-            optim_config = dict(gpu_margin_mem_ratio=0.)
-        else:
-            raise RuntimeError
-        
-        if args.distplan == "CAI_ZeRO1":
-            zero_stage = 1
-        elif args.distplan == "CAI_ZeRO2":
-            zero_stage = 2
-        elif args.distplan == "CAI_Gemini":
-            zero_stage = 3
-        else:
-            raise RuntimeError
-        
-        # wrap your model and optimizer
-        model = zero_model_wrapper(model, zero_stage, gemini_config)
-        
-        logger.info(get_mem_info(prefix='After init optim, '), ranks=[0])
-    else:
-        raise RuntimeError
-    
+
     model.eval()
-    
     enc = tiktoken.get_encoding("gpt2")
     encode = lambda s: enc.encode(s, allowed_special={"<|endoftext|>"})
     decode = lambda l: enc.decode(l)
