@@ -241,7 +241,7 @@ def main():
         logger.info("load model from out...")
         model_idx = args.model_idx
         load_checkpoint('out', model_idx, model)
-
+    
     model.eval()
     enc = tiktoken.get_encoding("gpt2")
     encode = lambda s: enc.encode(s, allowed_special={"<|endoftext|>"})
@@ -249,14 +249,18 @@ def main():
     start = args.start
     start_ids = encode(start)
     print(start, start_ids)
-    input_ids = torch.tensor(start_ids, dtype=torch.long, device="cuda:0")
+    input_ids = torch.tensor(start_ids, dtype=torch.long, device="cuda:0")[None, ...]
+    print(input_ids)
     from transformers import GenerationConfig
-    config = GenerationConfig(max_length=200, do_sample=True, top_p=0.6)
+    config = GenerationConfig(max_length=200, do_sample=True, top_p=0.6, eos_token_id=50256, pad_token_id=0,
+                              num_return_sequences=5)
     generation_output = model.generate(input_ids, config)
-    for idx, sentence in enumerate(generation_output.sequences):
+    for idx, sentence in enumerate(generation_output):
+        print(idx, sentence)
         print('next sentence %d:\n' % idx,
-              decode(sentence).split('<|endoftext|>')[0])
+              decode(sentence.tolist()).split('<|endoftext|>')[0])
         print('*' * 40)
+
 
 if __name__ == '__main__':
     main()
