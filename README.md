@@ -276,9 +276,13 @@ Acceleration of [AlphaFold Protein Structure](https://alphafold.ebi.ac.uk/)
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Installation
-> Colossal-AI currently only supports the Linux operating system and has not been tested on other OS such as Windows and macOS.
->
-> Environment Requirement: PyTorch 1.10 ~ 1.12 (WIP higher version), Python >= 3.7, CUDA >= 11.0. If you encounter any problem about installation, you may want to raise an [issue](https://github.com/hpcaitech/ColossalAI/issues/new/choose) in this repository.
+
+Requirements:
+- PyTorch >= 1.11 (PyTorch 2.x in progress)
+- Python >= 3.7
+- CUDA >= 11.0
+  
+If you encounter any problem about installation, you may want to raise an [issue](https://github.com/hpcaitech/ColossalAI/issues/new/choose) in this repository.
 
 ### Install from PyPI
 
@@ -287,6 +291,8 @@ You can easily install Colossal-AI with the following command. **By default, we 
 ```bash
 pip install colossalai
 ```
+
+**Note: only Linux is supported for now.**
 
 However, if you want to build the PyTorch extensions during installation, you can set `CUDA_EXT=1`.
 
@@ -378,6 +384,10 @@ We leverage the power of [GitHub Actions](https://github.com/features/actions) t
 
 ## Cite Us
 
+This project is inspired by some related projects (some by our team and some by other organizations). We would like to credit these amazing projects as listed in the [Reference List](./REFERENCE.md).
+
+To cite this project, you can use the following BibTeX citation.
+
 ```
 @article{bian2021colossal,
   title={Colossal-AI: A Unified Deep Learning System For Large-Scale Parallel Training},
@@ -387,6 +397,6 @@ We leverage the power of [GitHub Actions](https://github.com/features/actions) t
 }
 ```
 
-Colossal-AI has been accepted as official tutorials by top conference [SC](https://sc22.supercomputing.org/), [AAAI](https://aaai.org/Conferences/AAAI-23/), [PPoPP](https://ppopp23.sigplan.org/), [CVPR](https://cvpr2023.thecvf.com/), etc.
+Colossal-AI has been accepted as official tutorials by top conference [SC](https://sc22.supercomputing.org/), [AAAI](https://aaai.org/Conferences/AAAI-23/), [PPoPP](https://ppopp23.sigplan.org/), [CVPR](https://cvpr2023.thecvf.com/), [ISC](https://www.isc-hpc.com/), etc.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
