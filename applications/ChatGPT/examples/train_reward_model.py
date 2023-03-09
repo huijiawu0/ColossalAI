@@ -44,9 +44,9 @@ def train(args):
         else:
             raise ValueError(f'Unsupported model "{args.model}"')
 
-    gemini_config = dict(strict_ddp_mode=args.tp_degree == 1,
+    gemini_config = dict(strict_ddp_mode=True,
                          device=get_current_device(),
-                         placement_policy=args.placement,
+                         placement_policy='cpu',
                          pin_memory=True,
                          hidden_dim=model.config.n_embd,
                          search_range_mb=128)
