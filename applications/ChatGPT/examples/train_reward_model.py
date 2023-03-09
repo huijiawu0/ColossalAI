@@ -15,7 +15,9 @@ from transformers.models.gpt2.tokenization_gpt2 import GPT2Tokenizer
 from colossalai.nn import CPUAdam
 from colossalai.nn.optimizer import HybridAdam
 from colossalai.nn.parallel import zero_model_wrapper, zero_optim_wrapper
+from colossalai.tensor import ShardSpec, ProcessGroup
 from colossalai.utils import get_current_device
+from colossalai.utils.model.colo_init_context import ColoInitContext
 
 
 def train(args):
@@ -33,17 +35,24 @@ def train(args):
 
     # configure model
     # with strategy.model_init_context():
-    if args.model == 'bloom':
-        model = BLOOMRM(pretrained=args.pretrain, lora_rank=args.lora_rank).cuda()
-    elif args.model == 'opt':
-        model = OPTRM(pretrained=args.pretrain, lora_rank=args.lora_rank).cuda()
-    elif args.model == 'gpt2':
-        model = GPTRM(pretrained=args.pretrain, lora_rank=args.lora_rank).cuda()
-    elif args.model == 'glm':
+    # if args.model == 'bloom':
+    #     model = BLOOMRM(pretrained=args.pretrain, lora_rank=args.lora_rank).cuda()
+    # elif args.model == 'opt':
+    #     model = OPTRM(pretrained=args.pretrain, lora_rank=args.lora_rank).cuda()
+    # elif args.model == 'gpt2':
+    #     model = GPTRM(pretrained=args.pretrain, lora_rank=args.lora_rank).cuda()
+    # elif args.model == 'glm':
+    #     model = GLMRM(pretrained=args.pretrain, lora_rank=args.lora_rank).cuda()
+    # else:
+    #     raise ValueError(f'Unsupported model "{args.model}"')
+    world_size = torch.distributed.get_world_size()
+    shard_pg = ProcessGroup(tp_degree=world_size) if args.shardinit else None
+    default_dist_spec = ShardSpec([-1], [world_size]) if args.shardinit else None
+    with ColoInitContext(device=get_current_device(),
+                         dtype=torch.bfloat16,
+                         default_dist_spec=default_dist_spec,
+                         default_pg=shard_pg):
         model = GLMRM(pretrained=args.pretrain, lora_rank=args.lora_rank).cuda()
-    else:
-        raise ValueError(f'Unsupported model "{args.model}"')
-
     gemini_config = dict(strict_ddp_mode=True,
                          device=get_current_device(),
                          placement_policy='cpu',
