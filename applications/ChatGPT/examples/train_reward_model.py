@@ -1,17 +1,21 @@
 import argparse
+import json
 
 import loralib as lora
 import torch
 from chatgpt.dataset import RewardDataset
-from chatgpt.nn import BLOOMRM, GPTRM, OPTRM
+from chatgpt.nn import BLOOMRM, GPTRM, OPTRM, GLMRM
 from chatgpt.trainer import RewardModelTrainer
 from chatgpt.trainer.strategies import ColossalAIStrategy, DDPStrategy, NaiveStrategy
-from datasets import load_dataset
+from datasets import load_dataset, Dataset
 from torch.optim import Adam
 from transformers import AutoTokenizer, BloomTokenizerFast
 from transformers.models.gpt2.tokenization_gpt2 import GPT2Tokenizer
 
+from colossalai.nn import CPUAdam
 from colossalai.nn.optimizer import HybridAdam
+from colossalai.nn.parallel import zero_model_wrapper, zero_optim_wrapper
+from colossalai.utils import get_current_device
 
 
 def train(args):
@@ -35,9 +39,21 @@ def train(args):
             model = OPTRM(pretrained=args.pretrain, lora_rank=args.lora_rank).cuda()
         elif args.model == 'gpt2':
             model = GPTRM(pretrained=args.pretrain, lora_rank=args.lora_rank).cuda()
+        elif args.model == 'glm':
+            model = GLMRM(pretrained=args.pretrain, lora_rank=args.lora_rank).cuda()
         else:
             raise ValueError(f'Unsupported model "{args.model}"')
 
+    gemini_config = dict(strict_ddp_mode=args.tp_degree == 1,
+                         device=get_current_device(),
+                         placement_policy=args.placement,
+                         pin_memory=True,
+                         hidden_dim=model.config.n_embd,
+                         search_range_mb=128)
+    optim_config = dict(gpu_margin_mem_ratio=0.)
+    zero_stage = 3
+    model = zero_model_wrapper(model, zero_stage, gemini_config)
+    
     # configure tokenizer
     if args.model == 'gpt2':
         tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
@@ -47,22 +63,31 @@ def train(args):
         tokenizer.pad_token = tokenizer.eos_token
     elif args.model == 'opt':
         tokenizer = AutoTokenizer.from_pretrained("facebook/opt-350m")
+    elif args.model == 'glm':
+        tokenizer = AutoTokenizer.from_pretrained(pretrained=args.pretrain, trust_remote_code=True)
     else:
         raise ValueError(f'Unsupported model "{args.model}"')
     tokenizer.pad_token = tokenizer.eos_token
 
     max_len = 512
 
-    # configure optimizer
-    if args.strategy.startswith('colossalai'):
-        optim = HybridAdam(model.parameters(), lr=5e-5)
-    else:
-        optim = Adam(model.parameters(), lr=5e-5)
-
+    # # configure optimizer
+    # if args.strategy.startswith('colossalai'):
+    #     optim = HybridAdam(model.parameters(), lr=5e-5)
+    # else:
+    #     optim = Adam(model.parameters(), lr=5e-5)
+    optim = CPUAdam(model.parameters(), lr=1e-5)
+    optim = zero_optim_wrapper(model, optim, optim_config=optim_config)
+    
     # prepare for data and dataset
-    data = load_dataset(args.dataset)
-    train_data = data["train"]
-    eval_data = data['test']
+    def data_gen():
+        with open(args.dataset, 'r', encoding='utf-8') as f:
+            for line in f:
+                data = json.loads(line.strip())
+                yield data
+    data = Dataset.from_generator(data_gen)
+    train_data = data.select(range(800))
+    eval_data = data.select(range(800, 887))
     train_dataset = RewardDataset(train_data, tokenizer, max_len)
     eval_dataset = RewardDataset(eval_data, tokenizer, max_len)
 
