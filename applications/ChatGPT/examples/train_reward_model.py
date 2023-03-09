@@ -128,5 +128,12 @@ if __name__ == '__main__':
     parser.add_argument('--max_epochs', type=int, default=1)
     parser.add_argument('--batch_size', type=int, default=4)
     parser.add_argument('--lora_rank', type=int, default=0, help="low-rank adaptation matrices rank")
+    parser.add_argument(
+        "--shardinit",
+        action='store_true',
+        help=
+        "Shard the tensors when init the model to shrink peak memory size on the assigned device. Valid when using colossalai as dist plan.",
+    )
+
     args = parser.parse_args()
     train(args)
