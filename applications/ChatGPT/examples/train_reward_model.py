@@ -48,7 +48,7 @@ def train(args):
                          device=get_current_device(),
                          placement_policy='cpu',
                          pin_memory=True,
-                         hidden_dim=model.config.n_embd,
+                         hidden_dim=model.n_embd,
                          search_range_mb=128)
     optim_config = dict(gpu_margin_mem_ratio=0.)
     zero_stage = 3
