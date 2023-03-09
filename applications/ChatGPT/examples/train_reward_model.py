@@ -112,7 +112,7 @@ if __name__ == '__main__':
     parser.add_argument('--strategy',
                         choices=['naive', 'ddp', 'colossalai_gemini', 'colossalai_zero2'],
                         default='naive')
-    parser.add_argument('--model', choices=['gpt2', 'bloom', 'opt'], default='bloom')
+    parser.add_argument('--model', choices=['gpt2', 'bloom', 'opt', 'glm'], default='bloom')
     parser.add_argument('--pretrain', type=str, default=None)
     parser.add_argument('--dataset', type=str, default='Dahoas/rm-static')
     parser.add_argument('--save_path', type=str, default='rm_ckpt.pth')
