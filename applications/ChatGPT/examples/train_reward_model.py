@@ -32,17 +32,17 @@ def train(args):
         raise ValueError(f'Unsupported strategy "{args.strategy}"')
 
     # configure model
-    with strategy.model_init_context():
-        if args.model == 'bloom':
-            model = BLOOMRM(pretrained=args.pretrain, lora_rank=args.lora_rank).cuda()
-        elif args.model == 'opt':
-            model = OPTRM(pretrained=args.pretrain, lora_rank=args.lora_rank).cuda()
-        elif args.model == 'gpt2':
-            model = GPTRM(pretrained=args.pretrain, lora_rank=args.lora_rank).cuda()
-        elif args.model == 'glm':
-            model = GLMRM(pretrained=args.pretrain, lora_rank=args.lora_rank).cuda()
-        else:
-            raise ValueError(f'Unsupported model "{args.model}"')
+    # with strategy.model_init_context():
+    if args.model == 'bloom':
+        model = BLOOMRM(pretrained=args.pretrain, lora_rank=args.lora_rank).cuda()
+    elif args.model == 'opt':
+        model = OPTRM(pretrained=args.pretrain, lora_rank=args.lora_rank).cuda()
+    elif args.model == 'gpt2':
+        model = GPTRM(pretrained=args.pretrain, lora_rank=args.lora_rank).cuda()
+    elif args.model == 'glm':
+        model = GLMRM(pretrained=args.pretrain, lora_rank=args.lora_rank).cuda()
+    else:
+        raise ValueError(f'Unsupported model "{args.model}"')
 
     gemini_config = dict(strict_ddp_mode=True,
                          device=get_current_device(),
