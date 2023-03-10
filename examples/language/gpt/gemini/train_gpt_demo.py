@@ -27,7 +27,7 @@ CAI_VERSION = colossalai.__version__
 
 def parse_args():
     parser = colossalai.get_default_parser()
-    parser.add_argument("--save_steps", type=int, default=200)
+    parser.add_argument("--save_steps", type=int, default=100)
     parser.add_argument("--eval_steps", type=int, default=10)
     parser.add_argument("--data_dir", type=str, default="./")
     parser.add_argument(
@@ -266,7 +266,7 @@ def main():
             raise RuntimeError
 
         # build a highly optimized gpu/cpu optimizer
-        optimizer = CPUAdam(model.parameters(), lr=1e-5)
+        optimizer = CPUAdam(model.parameters(), lr=5e-6)
 
         if args.distplan == "CAI_ZeRO1":
             zero_stage = 1
@@ -385,8 +385,13 @@ def main():
                 )
                 if vloss['val'].item() < best_val_loss:
                     best_val_loss = vloss['val'].item()
-                    logger.info("save model to out...")
+                    logger.info(f"save model to out... curr best loss: {best_val_loss}")
                     save_checkpoint('out', 0, model)
+                else:
+                    logger.info(
+                        f"[EVAL] [{n + 1}/{NUM_STEPS}] Val loss:{vloss['val'].item():.3f} is larger then best {best_val_loss}, "
+                        f"no need to save", ranks=[0],
+                    )
                     
     tflops_list.sort()
     median_index = ((NUM_STEPS - WARMUP_STEPS) >> 1) + WARMUP_STEPS
